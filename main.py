@@ -36,7 +36,6 @@ while start < max_results:
         location = card('.job-result-card__location').text()
         time = card('time').attr('datetime')
         href = card('a').attr('href')
-        # print(card('.result-card__full-card-link'))
 
         # add card to results
         row = (title, subtitle, location, time, href)
