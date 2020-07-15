@@ -35,7 +35,7 @@ def search_by_keyword(keyword):
             print('No more results.')
             break
         doc = pq(res.text)
-        cards = doc('.result-card__contents')
+        cards = doc('.result-card')
 
         # extract information from html
         for card in cards.items():
@@ -43,8 +43,7 @@ def search_by_keyword(keyword):
             subtitle = card('.result-card__subtitle').text()
             location = card('.job-result-card__location').text()
             time = card('time').attr('datetime')
-            href = card('a').attr('href')
-            # href = card('.result-card__full-card-link').attr('href')
+            href = card('.result-card__full-card-link').attr('href')
             
             # add card to results
             row = (title, subtitle, location, time, href)
