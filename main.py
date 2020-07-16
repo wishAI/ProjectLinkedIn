@@ -10,6 +10,8 @@ job = 'Programmer'
 url_linkedin = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=$key$&location=vancouver&trk=public_jobs_jobs-search-bar_search-submit&f_JT=F%2CT%2CC&f_TP=1%2C2&redirect=false&position=1&pageNum=0&start='
 url_indeed = 'https://ca.indeed.com/jobs?q=$key$&l=Vancouver%2C+BC&jt=$jt$&fromage=7&start='
 jts_indeed = ['fulltime', 'contract', 'temporary']
+url_glassdoor = 'https://www.glassdoor.ca/Job/vancouver-$key$-jobs-SRCH_IL.0,9_IC2278756_KO10,19_IP$Page$.htm?jobType=$jt$&fromAge=7&radius=19'
+jts_glassdoor = ['fulltime', 'contract', 'temporary']
 
 # make a fake browser agent
 headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/54.0.2840.90 Safari/537.36'}
@@ -59,41 +61,78 @@ def search_by_keyword(keyword):
     #         results.append(row)
     #     start += cards.size()
 
-    print('')
-    print('Fetch Indeed jobs!')
-    print('')
-    for jt in jts_indeed:
-        start = 0
-        job_num = 0
-        count = 0
-        url = url_indeed.replace('$key$', keyword)
-        url = url.replace('$jt$', jt)
+    # print('')
+    # print('Fetch Indeed jobs!')
+    # print('')
+    # for jt in jts_indeed:
+    #     start = 0
+    #     job_num = 0
+    #     count = 0
+    #     url_temp = url_indeed.replace('$key$', keyword)
+    #     url_temp = url_temp.replace('$jt$', jt)
         
-        while start < 20000:
-            url += str(start)
+    #     while start < 20000:
+    #         url = url_temp + str(start)
+    #         res = req.get(url, headers = headers)
+    #         doc = pq(res.text)
+    #         temp = doc('#searchCountPages').text()
+    #         job_num = int(temp.split()[3])
+    #         cards = doc('.jobsearch-SerpJobCard')
+            
+    #         for card in cards.items():
+    #             count += 1
+    #             title = card('.title a').text()
+    #             company = card('.company').text()
+    #             location = card('.location').text()
+    #             time = card('.date')
+    #             href = 'https://ca.indeed.com/' + card('.title a').attr('href')
+
+    #             row = (title, company, location, time, href, 'Indeed')
+    #             print(row)
+    #             results.append(row)
+    #         start += cards.size()
+    #         if count >= job_num - 1:
+    #             break
+
+    
+    print('')
+    print('Fetch Glassdoor jobs!')
+    print('')
+    for jt in jts_glassdoor:
+        page_num = 0
+        current = 1
+        url_temp = url_glassdoor.replace('$key$', keyword)
+        url_temp = url_temp.replace('$jt$', jt)
+
+        while current < 2000:
+            url = url_temp.replace('$page$', str(current))
             res = req.get(url, headers = headers)
             doc = pq(res.text)
-            temp = doc('#searchCountPages').text()
-            job_num = int(temp.split()[3])
-            cards = doc('.jobsearch-SerpJobCard')
-            
-            for card in cards.items():
-                count += 1
-                title = card('.title a').text()
-                company = card('.company').text()
-                location = card('.location').text()
-                time = card('.date')
-                href = 'https://ca.indeed.com/' + card('.title a').attr('href')
+            temp = doc('#ResultsFooter .padVertSm').text()
+            page_num = int(temp.split()[3])
+            cards = doc('.jobContainer')
 
-                row = (title, company, location, time, href, 'Indeed')
+            for card in cards.items():
+                title = card('.jobEmpolyerName').text()
+                subtitle = card.children('a').text()
+                location = card('.loc').text()
+                href = card.children('a').attr('href')
+
+                row = (subtitle, title, location, '', href, 'glassdoor')
                 print(row)
                 results.append(row)
-            start += cards.size()
-
-            if count >= job_num - 1:
+            if current >= page_num:
                 break
+            current += 1
 
-            
+
+# remove unsatified results
+def is_satisfied(result):
+    loc = result[2]
+    # !!! reversed the logic to in Vancouver, Richmond, and Burnaby
+    if ('Vancouver' in loc) or ('Richmond' in loc) or ('Burnaby' in loc):
+        return True
+    return False            
 
 
 def linkedin_get_major(href):
@@ -120,14 +159,6 @@ print('')
 print('')
 print('Found ', len(results), ' records, start filtering.')
 
-
-# remove unsatified results
-def is_satisfied(result):
-    loc = result[2]
-    # !!! reversed the logic to in Vancouver, Richmond, and Burnaby
-    if ('Vancouver' in loc) or ('Richmond' in loc) or ('Burnaby' in loc):
-        return True
-    return False
 results = list(filter(is_satisfied, results))
 print(len(results), ' records after filtering.')
 
