@@ -5,8 +5,8 @@ import xlsxwriter
 
 
 # Data Definitions
+# Place 1: Keywords
 jobs = ['Analyst', 'Admin', 'Assistant', 'Junior', 'New Grads', 'Entry Level']
-job = 'Programmer'
 url_linkedin = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=$key$&location=vancouver&trk=public_jobs_jobs-search-bar_search-submit&f_JT=F%2CT%2CC&f_TP=1%2C2&redirect=false&position=1&pageNum=0&start='
 url_indeed = 'https://ca.indeed.com/jobs?q=$key$&l=Vancouver%2C+BC&jt=$jt$&fromage=7&start='
 jts_indeed = ['fulltime', 'contract', 'temporary']
@@ -152,7 +152,7 @@ def glass_get_size(href):
 # remove unsatified results
 def is_satisfied(result):
     loc = result[2]
-    # !!! reversed the logic to in Vancouver, Richmond, and Burnaby
+    # Place 2: Location
     if ('Vancouver' in loc) or ('Richmond' in loc) or ('Burnaby' in loc):
         return True
     return False
@@ -217,8 +217,8 @@ worksheet.write(r, 4, 'Link')
 r = 1
 for (title, subtitle, location, time, href, site) in results:
     majors = ''
-    # if site == 'linkedin':
-    #     majors= linkedin_get_major(href)
+    if site == 'linkedin':
+        majors= linkedin_get_major(href)
     worksheet.write(r, 0, subtitle)
     worksheet.write(r, 1, title)
     worksheet.write(r, 2, majors)
