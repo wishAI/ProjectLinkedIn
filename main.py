@@ -10,7 +10,7 @@ job = 'Programmer'
 url_linkedin = 'https://ca.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=$key$&location=vancouver&trk=public_jobs_jobs-search-bar_search-submit&f_JT=F%2CT%2CC&f_TP=1%2C2&redirect=false&position=1&pageNum=0&start='
 url_indeed = 'https://ca.indeed.com/jobs?q=$key$&l=Vancouver%2C+BC&jt=$jt$&fromage=7&start='
 jts_indeed = ['fulltime', 'contract', 'temporary']
-url_glassdoor = 'https://www.glassdoor.ca/Job/vancouver-$key$-jobs-SRCH_IL.0,9_IC2278756_KO10,19_IP$Page$.htm?jobType=$jt$&fromAge=7&radius=19'
+url_glassdoor = 'https://www.glassdoor.ca/Job/vancouver-$key$-jobs-SRCH_IL.0,9_IC2278756_KO10,$ko$_IP$page$.htm?jobType=$jt$&fromAge=7&radius=19'
 jts_glassdoor = ['fulltime', 'contract', 'temporary']
 
 # make a fake browser agent
@@ -21,7 +21,7 @@ results = []
 
 def linkedin_search_keyword(keyword):
     print('')
-    print('Fetch linkedin jobs!')
+    print('Fetch linkedin jobs: ', keyword)
     print('')
     start = 0
     while start < 20000:
@@ -50,7 +50,7 @@ def linkedin_search_keyword(keyword):
 
 def indeed_search_keyword(keyword):
     print('')
-    print('Fetch Indeed jobs!')
+    print('Fetch Indeed jobs: ', keyword)
     print('')
     for jt in jts_indeed:
         start = 0
@@ -84,7 +84,7 @@ def indeed_search_keyword(keyword):
 
 def glass_search_keyword(keyword):
     print('')
-    print('Fetch Glassdoor jobs!')
+    print('Fetch Glassdoor jobs: ', keyword)
     print('')
     for jt in jts_glassdoor:
         page_num = 0
@@ -94,9 +94,13 @@ def glass_search_keyword(keyword):
 
         while current < 2000:
             url = url_temp.replace('$page$', str(current))
+            url = url.replace('$ko$', str(10 + len(keyword)))
+            print(url)
             res = req.get(url, headers = headers)
             doc = pq(res.text)
             temp = doc('#ResultsFooter .padVertSm').text()
+            if (len(temp) < 1):
+                break
             page_num = int(temp.split()[3])
             cards = doc('.jobContainer')
 
